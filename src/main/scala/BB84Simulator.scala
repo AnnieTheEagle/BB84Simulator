@@ -25,8 +25,9 @@ object BB84Simulator {
 
     override def top: Frame = new MainFrame {
       //// TITLE COMPONENT ////
+      title = "BB84 Simulator by Ferdinand Keller"
       val titleLabel = new Label {
-        text = "QuantumSim (Beta)"
+        text = "BB84Simulator (Beta)"
         font = new Font("Arial", java.awt.Font.PLAIN, 24)
       }
 
@@ -35,12 +36,12 @@ object BB84Simulator {
       val Port = new TextField { columns = 5; text = "9999"; enabled = false }
 
       val hostNamePanel = new GridPanel(1, 2) {
-        contents += new Label { text = "IP:  " }
+        contents += new Label { text = "Target IP: " }
         contents += IP
       }
 
       val portPanel = new GridPanel(1, 2) {
-        contents += new Label { text = "Port:  " }
+        contents += new Label { text = "Target Port: " }
         contents += Port
       }
 
@@ -68,11 +69,15 @@ object BB84Simulator {
       }
 
       //// SETTINGS PANEL COMPONENTS ////
-      val toggleButton = new ToggleButton { text = "Server Enabled"; selected = true }
+      val toggleButton = new ToggleButton { text = "Accept Requests"; selected = true }
       val toggleRP = new ToggleButton { text = "Accept RP"; selected = true }
 
-      val settingsLabel = new Label {
+      val serverSettingsLabel = new Label {
         text = "Server Settings"
+        font = new Font("Arial", java.awt.Font.BOLD, 14)
+      }
+      val clientSettingsLabel = new Label {
+        text = "Client Settings"
         font = new Font("Arial", java.awt.Font.BOLD, 14)
       }
 
@@ -81,12 +86,13 @@ object BB84Simulator {
 
       val messageLabel = new Label { text = "Msgs/morph: " }
 
-      val settingsPanel = new GridPanel(3, 1) {
-        contents += settingsLabel
+      val settingsPanel = new GridPanel(4, 1) {
+        contents += serverSettingsLabel
         contents += new GridPanel(1, 2) {
           contents += toggleButton
           contents += toggleRP
         }
+        contents += clientSettingsLabel
         contents += new GridPanel(1, 3) {
           contents += messageLabel
           contents += morphPerMessages
@@ -107,6 +113,8 @@ object BB84Simulator {
 
       // Which components will we want to listen to for events?
       listenTo(connectButton)
+      listenTo(toggleRP)
+      listenTo(toggleButton)
       listenTo(morphRandChkBox)
       listenTo(morphPerMessages)
 
@@ -116,6 +124,14 @@ object BB84Simulator {
           connectButton.enabled = false
           connectToClient(IP.text, Port.text.toInt, useMKConnect.selected, morphRandChkBox.selected, useRPConnect.selected)
           connectButton.enabled = true
+
+        case ButtonClicked(component) if component == toggleRP =>
+          server.acceptRP = toggleRP.selected
+          toggleRP.text = if (toggleRP.selected) "Accept RP" else "Decline RP"
+
+        case ButtonClicked(component) if component == toggleButton =>
+          server.acceptRequests = toggleButton.selected
+          toggleButton.text = if (toggleButton.selected) "Accept Requests" else "Decline Requests"
 
         case ButtonClicked(component) if component == morphRandChkBox => // If MorphRand selected, disable per-message setting
           // morphPerMessages.enabled = !morphRandChkBox.selected

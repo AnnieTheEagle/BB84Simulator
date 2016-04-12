@@ -14,7 +14,9 @@ import scala.io.BufferedSource
   */
 class ExchangeServer (port: Integer) {
   val server = new ServerSocket(port) // Create the socket server
-  val acceptRequests = true // Declare whether we want to accept incoming requests
+
+  var acceptRequests = true // Declare whether we want to accept incoming requests
+  var acceptRP = true // Declare whether we want to accept incoming RP requests
 
   val serverThread = new Thread(new Runnable {
 
@@ -377,6 +379,13 @@ class ExchangeServer (port: Integer) {
         return message
       }
 
+      if (!acceptRP) {
+        // If the server is currently declining to use RP polarised channels (for example, doesn't have the capability to do so)...
+        message.symbol = ClassicalMessage.RP_DECLINED
+        message.message = "This server is not accepting the use of rotationally polarised channels."
+        return message
+      }
+
       if (encrypted) {
         // Encryption key = "3.14159" - Simulation ONLY
         var encryptionKey = Utilities.conformBinaryKey(Utilities.stringToBinaryString(client.polarisation_key))
@@ -391,7 +400,6 @@ class ExchangeServer (port: Integer) {
 
         else {
           client.r_polarisation = msg.message.toInt
-          client.polarise_channel = true
 
           message.symbol = ClassicalMessage.DEGREES_ACKNOWLEDGED
           message.message = "Rotational Polarisation is ready!"
@@ -400,7 +408,6 @@ class ExchangeServer (port: Integer) {
 
       else {
         client.r_polarisation = msg.message.toInt
-        client.polarise_channel = true
 
         message.symbol = ClassicalMessage.DEGREES_ACKNOWLEDGED
         message.message = "Rotational Polarisation is ready!"

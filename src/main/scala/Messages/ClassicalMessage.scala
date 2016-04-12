@@ -28,6 +28,7 @@ object ClassicalMessage {
   val ENCRYPTED_DEGREES = "Q-RDEG-ENC"
   val PLAINTEXT_DEGREES = "Q-RDEG-PLN"
   val DEGREES_ACKNOWLEDGED = "Q-RDEG-ACK"
+  val RP_DECLINED = "Q-RDEG-DEN"
 
   // Ready Signal
   val READY = "Q-READY"

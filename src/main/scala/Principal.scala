@@ -18,9 +18,8 @@ class Principal(connectingTo: String) {
   var morph_per_messages: Int = -1 // Number of messages per morph
   var messages_since_morph: Int = -1 // Messages since last morph
 
-  var polarise_channel: Boolean = false // Rotational Polarisation disabled by default
   var polarisation_key: String = "3.14159" // Key used to encrypt polarisation degrees (default of '3.14159' for simulation purposes ONLY!)
-  var r_polarisation: Int = 0 // Degrees used to polarise channel
+  var r_polarisation: Int = 0 // Degrees used to polarise channel - If this is 0, then RP is off.
 
   var encryption_ready: Boolean = false // Ready to use encrypted communications!
   var secure_communications_ready: Boolean = false // All key exchange protocols and sub-protocols (MK, RP) completed?

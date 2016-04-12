@@ -45,7 +45,9 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
     // PHASE 2.5: Rotationally Polarise Channel
     if (rotaryPolarisation) {
       val rotaryPolarisationSuccessful = exchangeRotationPolarisation()
-      partner.polarise_channel = rotaryPolarisationSuccessful
+
+      if (!rotaryPolarisationSuccessful)
+        return
     }
     // If there is a pre-shared secret key for use, use that key to encrypt a message to share a rotation degree
     // If not, Logger.warn it, but continue regardless.
@@ -68,10 +70,10 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
     // PHASE E1: Agree to use Morphing Key together...
     if (enableMorphingKey) {
       val morphingKeyAgreed = agreeMorphingKeyMode()
-      if (morphingKeyAgreed == null) {
+      if (morphingKeyAgreed == "error") {
         return
       }
-      if (morphingKeyAgreed == "NONE") {
+      else if (morphingKeyAgreed == "none") {
         Logger.warn("Mutating Engine Disabled. See above entries for more details.", this)
       }
     }
@@ -91,10 +93,18 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
    * @output: String containing the binary string of the user's chosen key phrase.
    */
   def promptKeyphraseFromUser(): String = {
-    Logger.info("[INPUT REQUESTED] Enter passphrase (20+ chars) or 'random' for a random passphrase: ", this)
+    Logger.info("[INPUT REQUESTED] Requesting input from user for passphrase", this)
 
-    val phrase = scala.io.StdIn.readLine() // Get data from console
-    partner.key_string = phrase
+    val input = scala.swing.Dialog.showInput(null, "Enter passphrase (20+ chars) or 'random' for a random passphrase", initial = "random")
+    var phrase = "random"
+
+    input match {
+      case Some(s) =>
+        partner.key_string = s
+        phrase = s
+      case None =>
+    }
+
 
     var keyBits: String = { // Converts the key into a binary string representation.
       if (phrase != "random")
@@ -144,17 +154,30 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
   def exchangeRotationPolarisation(): Boolean = {
     Logger.warn("Rotational Polarisation is enabled. This is an experimental feature", this)
 
-    Logger.info("[INPUT REQUESTED] Enter your encryption passphrase for key (or 'none' for no key - unsafe!):", this)
-    val key = scala.io.StdIn.readLine() // Get data from console
+    Logger.info("[INPUT REQUESTED] Requesting input from user for RP passphrase", this)
+    val input = scala.swing.Dialog.showInput(null, "Enter your encryption passphrase for key (or 'none' for no key - unsafe!)", initial = "none")
+    var key = "none"
+
+    input match {
+      case Some(s) => key = s
+      case None =>
+    }
+
     if (key.toLowerCase != "none") {
       partner.polarisation_key = Utilities.conformBinaryKey(Utilities.stringToBinaryString(key))
       partner.polarisation_key = BigInt(partner.polarisation_key, 2).toString(16)
     }
 
-    Logger.info("[INPUT REQUESTED] Enter your requested polarisation (in degrees from 0 to 360):", this)
-    val degrees = scala.io.StdIn.readLine() // Get data from console
-    partner.r_polarisation = degrees.replaceAll("[^\\d.]", "").toInt % 360 // Convert entered number into integer (modulo 360).
+    Logger.info("[INPUT REQUESTED] Requesting input from user for RP degree", this)
+    val RPInput = scala.swing.Dialog.showInput(null, "Enter your requested polarisation (in degrees from 0 to 360)", initial = "30")
+    var degrees = 0
 
+    RPInput match {
+      case Some(s) => degrees = s.replaceAll("[^\\d.]", "").toInt % 360 // Convert entered number into integer (modulo 360).
+      case None =>
+    }
+
+    partner.r_polarisation = degrees
 
     val degreesMessage = new ClassicalMessage("", "")
 
@@ -178,6 +201,14 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
 
     if (responseMessage.symbol == ClassicalMessage.DEGREES_ACKNOWLEDGED) {
       true
+    }
+    else if (responseMessage.symbol == ClassicalMessage.RP_DECLINED) {
+      val res = scala.swing.Dialog.showConfirmation(null, "Server declined to use rotational polarisation, continue?", optionType = scala.swing.Dialog.Options.YesNo, title = "Server declined RP")
+
+      if (res == scala.swing.Dialog.Result.Ok)
+        Logger.warn("Client has chosen to resume with rotational polarisation DISABLED. Reverting to normal quantum channel", this)
+        partner.r_polarisation = 0 // Disengage RP.
+        true
     }
     else {
       Logger.error("Server responded in an unexpected way. Response: " + responseMessage.message, this)
@@ -312,7 +343,7 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
         else {
           // Unexpected response, print the message
           Logger.error("Server replied unexpectedly with: " + countResponse.message, this)
-          "NONE"
+          "none"
         }
       }
       else {
@@ -334,25 +365,33 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
         }
         else {
           Logger.error("Server replied unexpectedly with: " + countResponse.message, this)
-          "NONE"
+          "none"
         }
       }
     }
     else if (response != null && response.message.equals("Q-MORPH-UNMATCHABLE")) {
       Logger.warn("Server had no matching morphing function. Turning off mutating keys!", this)
-      "NONE"
+
+      val res = scala.swing.Dialog.showConfirmation(null, "There are no matching morphing functions on this server, continue without mutating key encryption?", optionType = scala.swing.Dialog.Options.YesNo, title = "No matching functions")
+
+      if (res == scala.swing.Dialog.Result.Ok)
+        Logger.warn("Client has chosen to resume with mutating keys DISABLED. Reverting to static key encryption", this)
+        partner.morphing_function = "none"
+        partner.morph_per_messages = -1
+
+      "none"
     }
     else if (response != null && response.symbol == ClassicalMessage.RESET) {
       Logger.error("The server responded with: " + response.message, this)
-      "NONE"
+      "error"
     }
     else if (response == null) {
       Logger.error("Error during decryption, see above entries for details", this)
-      null
+      "error"
     }
     else {
       Logger.error("Server replied unexpectedly with: " + response.message, this)
-      "NONE"
+      "error"
     }
   }
 
