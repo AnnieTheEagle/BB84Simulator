@@ -140,10 +140,10 @@ object Utilities {
   }
 
   /*
- * stringToBinaryString() -> Converts a string into a binary string representation.
- * @input text: Input string of characters to be converted.
- * @output: String containing the binary representation of the string
- */
+   * stringToBinaryString() -> Converts a string into a binary string representation.
+   * @input text: Input string of characters to be converted.
+   * @output: String containing the binary representation of the string
+   */
   def stringToBinaryString(text: String): String = {
     var str = ""
     for (byte <- text.getBytes) { // Convert input string into bytes, then foreach byte:
@@ -152,5 +152,19 @@ object Utilities {
     }
 
     str // Return new string
+  }
+
+  /*
+   * createInfoMessageBox() -> Displays a GUI message box with the string and title input.
+   * @input title: Title to be displayed at the top.
+   * @input message: Message to be shown to the user.
+   */
+  def createInfoMessageBox(title: String, message: String): Unit = {
+    scala.swing.Dialog.showMessage(
+      null,
+      message,
+      title,
+      scala.swing.Dialog.Message.Info
+    )
   }
 }

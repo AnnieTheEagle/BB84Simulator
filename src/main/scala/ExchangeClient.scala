@@ -88,11 +88,9 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
 
     Logger.info("All key exchange completed! Ready to send secure messages!", this)
 
-    scala.swing.Dialog.showMessage(
-      null,
-      "Successfully exchanged a key with client " + ip + ":" + port + "\nThe final key is: " + partner.final_key,
+    Utilities.createInfoMessageBox(
       "Key exchanged successfully!",
-      scala.swing.Dialog.Message.Info
+      "Successfully exchanged a key with client " + ip + ":" + port + "\nThe final key is: " + partner.final_key
     )
   }
 
@@ -142,14 +140,30 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
 
     responseMessage.symbol match {
       case ClassicalMessage.KEY_EXCHANGE_ACCEPT =>
+        Utilities.createInfoMessageBox(
+          "Server accepted request",
+          "Server " + ip + ":" + port + " has accepted the key exchange request!"
+        )
         true
       case ClassicalMessage.KEY_EXCHANGE_DENIED =>
+        Utilities.createInfoMessageBox(
+          "Server denied request",
+          "Server " + ip + ":" + port + " has denied the key exchange request!"
+        )
         Logger.error("Cannot continue with key exchange. Server " + ip + ":" + port + " denied key exchange!", this)
         false
       case ClassicalMessage.KEY_EXCHANGE_MISMATCH =>
+        Utilities.createInfoMessageBox(
+          "Server denied request",
+          "Server replied with " + responseMessage.message
+        )
         Logger.error("Cannot continue with key exchange. Server responded: " + responseMessage.message, this)
         false
       case _ =>
+        Utilities.createInfoMessageBox(
+          "Server denied request",
+          "Server responded unexpectedly: " + responseMessage.message + ", with symbol: " + responseMessage.symbol
+        )
         Logger.error("Cannot continue with key exchange. Server responded unexpectedly: " + responseMessage.message + ", with symbol: " + responseMessage.symbol, this)
         false
     }
@@ -208,6 +222,10 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
 
 
     if (responseMessage.symbol == ClassicalMessage.DEGREES_ACKNOWLEDGED) {
+      Utilities.createInfoMessageBox(
+        "Rotational polarisation agreed!",
+        "Successfully agreed a rotational polarisation degree with server " + ip + ":" + port + "\nThe degree is: " + partner.r_polarisation
+      )
       true
     }
     else if (responseMessage.symbol == ClassicalMessage.RP_DECLINED) {
@@ -219,6 +237,10 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
         true
     }
     else {
+      Utilities.createInfoMessageBox(
+        "Error!",
+        "Server responded in an unexpected way. Response: " + responseMessage.message
+      )
       Logger.error("Server responded in an unexpected way. Response: " + responseMessage.message, this)
       false
     }
@@ -249,9 +271,18 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
     completedMessage.message = partner.key_bits.length.toString
 
     val responseMessage = sendClassicalMessage(completedMessage, waitForResponse = true)
-    if (responseMessage.symbol == ClassicalMessage.DATA_ACKNOWLEDGED)
+    if (responseMessage.symbol == ClassicalMessage.DATA_ACKNOWLEDGED) {
+      Utilities.createInfoMessageBox(
+        "Successful quantum transmission!",
+        "Server received all of our quantum bits!"
+      )
       true
+    }
     else {
+      Utilities.createInfoMessageBox(
+        "Error!",
+        "Server responded in an unexpected way. Response: " + responseMessage.message
+      )
       Logger.error("Cannot continue with key exchange. Server responded with: " + responseMessage.message, this)
       false
     }
@@ -271,9 +302,17 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
 
     if (responseMessage.symbol == ClassicalMessage.BASIS_EXCHANGE) {
       partner.partner_basis_bits = responseMessage.message
+      Utilities.createInfoMessageBox(
+        "Successfully distributed basis bits!",
+        "Server has received our basis bit string successfully"
+      )
       true
     }
     else {
+      Utilities.createInfoMessageBox(
+        "Error!",
+        "Server responded in an unexpected way. Response: " + responseMessage.message
+      )
       Logger.error("Cannot continue with key exchange. Server responded with: " + responseMessage.message, this)
       false
     }
@@ -309,6 +348,10 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
       partner.final_key
     }
     else {
+      Utilities.createInfoMessageBox(
+        "Error!",
+        "Server responded in an unexpected way. Response: " + responseMessage.message
+      )
       Logger.error("Cannot continue with key exchange. Server responded with: " + responseMessage.message, this)
       ""
     }
@@ -339,17 +382,30 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
           partner.random_morphing = true
 
           // Output to our log
-          Logger.info("Mutation keys enabled!", this)
+          Logger.info("Mutating keys enabled!", this)
           Logger.info("Morphing interval is RANDOM", this)
+
+          Utilities.createInfoMessageBox(
+            "Mutating key encryption enabled!",
+            "Mutating key encryption has been enabled. The morphing interval is RANDOM"
+          )
 
           function
         }
         else if (countResponse == null) {
+          Utilities.createInfoMessageBox(
+            "Decryption error!",
+            "Error during decryption, see log file for details."
+          )
           Logger.error("Error during decryption, see above entries for details", this)
-          null
+          "error"
         }
         else {
           // Unexpected response, print the message
+          Utilities.createInfoMessageBox(
+            "Error!",
+            "Server responded in an unexpected way. Response: " + countResponse.message
+          )
           Logger.error("Server replied unexpectedly with: " + countResponse.message, this)
           "none"
         }
@@ -369,7 +425,7 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
         }
         else if (countResponse == null) {
           Logger.error("Error during decryption, see above entries for details", this)
-          null
+          "error"
         }
         else {
           Logger.error("Server replied unexpectedly with: " + countResponse.message, this)
@@ -422,6 +478,10 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
       true
     }
     else {
+      Utilities.createInfoMessageBox(
+        "Error!",
+        "Server responded in an unexpected way. See log file for details."
+      )
       Logger.error("Something went wrong, see above entries for details", this)
       false
     }

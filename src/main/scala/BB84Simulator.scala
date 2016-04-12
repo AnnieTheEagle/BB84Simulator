@@ -199,6 +199,10 @@ object BB84Simulator {
       client.sendSecretMessage("Division by zero is a lie!")
       client.sendSecretMessage("Eat your heart out, NSA!")
       client.sendSecretMessage("This is our last message, peace!")
+      Utilities.createInfoMessageBox(
+        "BB84Simulator",
+        "Sent all ten test messages. Simulation complete. Check log entry.\nLog file name: " + Logging.Logger.logFile
+      )
     }
     else {
       Logging.Logger.error("BB84 Key Exchange has been aborted with " + client.partner.partner_ip, this)
