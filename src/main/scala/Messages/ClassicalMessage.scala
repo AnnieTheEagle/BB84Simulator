@@ -21,6 +21,8 @@ object ClassicalMessage {
   // Morphing Key
   val RANDOM_MODE = "Q-MORPH-RAND"
   val RANDOM_MODE_ACCEPTED = "Q-MORPH-RAND-ACK"
+  val RANDOM_MORPH_NOW = "Q-MUTATE"
+  val RANDOM_MORPH_SUCCESS = "Q-MUTATE-OK"
 
   // Rotational Polarisation
   val ENCRYPTED_DEGREES = "Q-RDEG-ENC"

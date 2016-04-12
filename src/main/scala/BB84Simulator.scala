@@ -68,8 +68,7 @@ object BB84Simulator {
       }
 
       //// SETTINGS PANEL COMPONENTS ////
-      val toggleButton = new ToggleButton { text = "Server"; selected = true }
-      val toggleMorph = new ToggleButton { text = "Accept MK"; selected = true }
+      val toggleButton = new ToggleButton { text = "Server Enabled"; selected = true }
       val toggleRP = new ToggleButton { text = "Accept RP"; selected = true }
 
       val settingsLabel = new Label {
@@ -80,15 +79,16 @@ object BB84Simulator {
       val morphPerMessages = new TextField { columns = 3; text = "" + MorphingKeyManager.messagesPerMorph }
       val morphRandChkBox = new CheckBox { text = "Random?" }
 
+      val messageLabel = new Label { text = "Msgs/morph: " }
+
       val settingsPanel = new GridPanel(3, 1) {
         contents += settingsLabel
-        contents += new GridPanel(1, 3) {
+        contents += new GridPanel(1, 2) {
           contents += toggleButton
-          contents += toggleMorph
           contents += toggleRP
         }
         contents += new GridPanel(1, 3) {
-          contents += new Label { text = "Msgs/morph: " }
+          contents += messageLabel
           contents += morphPerMessages
           contents += morphRandChkBox
         }
@@ -118,7 +118,8 @@ object BB84Simulator {
           connectButton.enabled = true
 
         case ButtonClicked(component) if component == morphRandChkBox => // If MorphRand selected, disable per-message setting
-          morphPerMessages.enabled = !morphRandChkBox.selected
+          // morphPerMessages.enabled = !morphRandChkBox.selected
+          messageLabel.text = { if (morphRandChkBox.selected) "Max/morph: " else "Msgs/morph: " }
 
         case EditDone(`morphPerMessages`) =>
           val newAmount = morphPerMessages.text.replaceAll("[^0-9]", "")

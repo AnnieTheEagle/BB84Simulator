@@ -330,6 +330,11 @@ class ExchangeServer (port: Integer) {
           client.secure_communications_ready = true
           response = ClassicalMessage.READY_ACKNOWLEDGED
 
+        case q if q == ClassicalMessage.RANDOM_MORPH_NOW =>
+          client.final_key = Utilities.morphKey(client.final_key, client.morphing_function)
+          Logger.info("Key has been successfully mutated using " + client.morphing_function, this)
+          response = ClassicalMessage.RANDOM_MORPH_SUCCESS
+
         case _ =>
           response = plainText.toUpperCase() // Default
       }
@@ -338,7 +343,8 @@ class ExchangeServer (port: Integer) {
       response = Utilities.encryptWithAESCBC(response + "<decrypt:ok>", BB84Simulator.clients.get(address).final_key)
 
       if (client.morphing_function != "none" && client.secure_communications_ready && pT.contains("<decrypt:ok>")) {
-        client.messages_since_morph += 1
+        if (!client.random_morphing)
+          client.messages_since_morph += 1
 
         if (client.morph_per_messages == client.messages_since_morph) {
           client.final_key = Utilities.morphKey(client.final_key, client.morphing_function)

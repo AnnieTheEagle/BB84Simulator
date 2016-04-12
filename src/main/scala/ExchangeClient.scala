@@ -368,6 +368,10 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
 
     // Process request
     if (responseMessage != null && responseMessage.message == ClassicalMessage.READY_ACKNOWLEDGED) {
+      if (partner.random_morphing) { // Generate first interval for the key.
+        partner.messages_since_morph = 0
+        partner.morph_per_messages = scala.util.Random.nextInt(MorphingEngine.MorphingKeyManager.messagesPerMorph) + 1
+      }
       true
     }
     else {
@@ -431,7 +435,14 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
 
     // Decrypt the cipher-text
     val responseCipherText = responseMessage.message
-    try { responseMessage.message = Utilities.decryptWithAESCBC(responseCipherText, key) }
+    try {
+      if (message == ClassicalMessage.RANDOM_MORPH_NOW) {
+        responseMessage.message = Utilities.decryptWithAESCBC(responseCipherText, Utilities.morphKey(key, partner.morphing_function))
+
+      } else {
+        responseMessage.message = Utilities.decryptWithAESCBC(responseCipherText, key)
+      }
+    }
     catch {
       case illex: IllegalArgumentException =>
         Logger.warn("There was an error decrypting message. This could mean the server has a mismatched key and has warned us in plaintext.", this)
@@ -461,6 +472,16 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
         partner.final_key = Utilities.morphKey(partner.final_key, partner.morphing_function)
         Logger.info("Successfully morphed the key using " + partner.morphing_function, this)
         partner.messages_since_morph = 0
+
+        if (partner.random_morphing) {
+          partner.messages_since_morph = -1000 // Prevents dual morphing during sending of encrypted morph signal.
+          val response = sendEncryptedMessage(ClassicalMessage.RANDOM_MORPH_NOW, key, waitForResponse = true) // Sends morph signal using the old key.
+
+          if (response.message == ClassicalMessage.RANDOM_MORPH_SUCCESS) {
+            partner.messages_since_morph = 0
+            partner.morph_per_messages = scala.util.Random.nextInt(MorphingEngine.MorphingKeyManager.messagesPerMorph) + 1
+          }
+        }
       }
     }
 
