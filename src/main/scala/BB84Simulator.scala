@@ -187,14 +187,18 @@ object BB84Simulator {
     // Perform the Key Exchange
     client.executeKeyExchange()
 
-      // Send some test messages -- TODO: For each client connected, create new GUI for sending messages.
+    // Send some test messages
     if (client.partner.secure_communications_ready) {
-      client.sendSecretMessage("Hello!")
-      client.sendSecretMessage("World!")
-      client.sendSecretMessage("Testing!")
-      client.sendSecretMessage("Stuff!")
-      client.sendSecretMessage("Extra Stuff!")
-
+      client.sendSecretMessage("Testing this!")
+      client.sendSecretMessage("Hello how are you?")
+      client.sendSecretMessage("Have you heard about BB84?")
+      client.sendSecretMessage("Extra messages!!")
+      client.sendSecretMessage("Increased message count by one :o!")
+      client.sendSecretMessage("APIs are great things!")
+      client.sendSecretMessage("Communicating to a server!")
+      client.sendSecretMessage("Division by zero is a lie!")
+      client.sendSecretMessage("Eat your heart out, NSA!")
+      client.sendSecretMessage("This is our last message, peace!")
     }
     else {
       Logging.Logger.error("BB84 Key Exchange has been aborted with " + client.partner.partner_ip, this)

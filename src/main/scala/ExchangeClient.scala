@@ -85,7 +85,15 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
 
     // COMPLETED KEY EXCHANGE: We are done!
     partner.secure_communications_ready = true
+
     Logger.info("All key exchange completed! Ready to send secure messages!", this)
+
+    scala.swing.Dialog.showMessage(
+      null,
+      "Successfully exchanged a key with client " + ip + ":" + port + "\nThe final key is: " + partner.final_key,
+      "Key exchanged successfully!",
+      scala.swing.Dialog.Message.Info
+    )
   }
 
   /*
