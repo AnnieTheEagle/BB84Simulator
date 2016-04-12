@@ -7,6 +7,7 @@ import RandomEngine.{TrueRandomSource => TRandom}
 import scala.swing.BorderPanel.Position._
 import scala.swing._
 import scala.swing.event.{ButtonClicked, EditDone, WindowClosing}
+import scala.util.matching.Regex
 
 /**
   * Created by annie on 18/03/2016.
@@ -17,6 +18,10 @@ object BB84Simulator {
   // Clients and Servers Databases in the form of ConcurrentHashMaps.
   val clients = new java.util.concurrent.ConcurrentHashMap[Inet4Address, Principal]
   val servers = new java.util.concurrent.ConcurrentHashMap[Inet4Address, Principal]
+
+  // Regex Patterns
+  val IP_REGEX = new Regex("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
+  val NUMERIC_REGEX = new Regex("[^0-9]")
 
   object GUI extends SimpleSwingApplication {
     // Create server object.
@@ -33,7 +38,7 @@ object BB84Simulator {
 
       //// CENTRAL PANEL COMPONENTS ////
       val IP = new TextField { columns = 16; text = "127.0.0.1" }
-      val Port = new TextField { columns = 5; text = "9999"; enabled = false }
+      val Port = new TextField { columns = 5; text = "9999" }
 
       val hostNamePanel = new GridPanel(1, 2) {
         contents += new Label { text = "Target IP: " }
@@ -111,7 +116,7 @@ object BB84Simulator {
 
       size = new Dimension(300, 275)
 
-      // Which components will we want to listen to for events?
+      // Setup listener for our components that have actions/events.
       listenTo(connectButton)
       listenTo(toggleRP)
       listenTo(toggleButton)
@@ -121,35 +126,61 @@ object BB84Simulator {
       // Add reactions to these events
       reactions += {
         case ButtonClicked(component) if component == connectButton =>
+          // If the connect button has been pushed, connect to target client.
           connectButton.enabled = false
           connectToClient(IP.text, Port.text.toInt, useMKConnect.selected, morphRandChkBox.selected, useRPConnect.selected)
           connectButton.enabled = true
 
         case ButtonClicked(component) if component == toggleRP =>
+          // Toggle whether or not the server will accept or decline RP
           server.acceptRP = toggleRP.selected
           toggleRP.text = if (toggleRP.selected) "Accept RP" else "Decline RP"
 
         case ButtonClicked(component) if component == toggleButton =>
+          // Toggle whether or not the server will accept or decline key exchange requests
           server.acceptRequests = toggleButton.selected
           toggleButton.text = if (toggleButton.selected) "Accept Requests" else "Decline Requests"
 
-        case ButtonClicked(component) if component == morphRandChkBox => // If MorphRand selected, disable per-message setting
-          // morphPerMessages.enabled = !morphRandChkBox.selected
+        case ButtonClicked(component) if component == morphRandChkBox =>
+          // If random mutation mode is selected, change to maximum number of messages (upper bound on the randomisation of the next slice size)
           messageLabel.text = { if (morphRandChkBox.selected) "Max/morph: " else "Msgs/morph: " }
 
         case EditDone(`morphPerMessages`) =>
-          val newAmount = morphPerMessages.text.replaceAll("[^0-9]", "")
+          // Once we finish editing morphPerMessages, replace all non numeric characters with nothing.
+          val newAmount = NUMERIC_REGEX.replaceAllIn(morphPerMessages.text, "")
           morphPerMessages.text = newAmount
           MorphingKeyManager.messagesPerMorph = newAmount.toInt
 
 
-        case WindowClosing(_) => // Gracefully close the server on WindowClosing
+        case WindowClosing(_) =>
+          // Gracefully close the server on WindowClosing
           server.stopServer()
       }
     }
   }
 
   def connectToClient(host: String = "127.0.0.1", port: Int = 9999, mk: Boolean = true, mr: Boolean, rp: Boolean = false): Unit = {
+    // Check if IP is valid
+    if (IP_REGEX.findFirstIn(host).isEmpty) {
+      Dialog.showMessage(
+        null,
+        "Invalid IP address entered, please try again. Valid IPs are from 0.0.0.0 to 255.255.255.255!",
+        "Error!",
+        scala.swing.Dialog.Message.Error
+      )
+      return
+    }
+
+    if (port < 0 || port > 65535) {
+      Dialog.showMessage(
+        null,
+        "Invalid port entered, please try again. Valid ports are between 0 and 65535!",
+        "Error!",
+        scala.swing.Dialog.Message.Error
+      )
+      return
+    }
+
     // Create new Client Object
     val client = new ExchangeClient(host, port, mk, mr, rp)
 
@@ -179,7 +210,7 @@ object BB84Simulator {
       Dialog.showMessage(
         null,
         "Could not get any true-random bits from Random.org :(",
-        "QuantumSim has run into a problem",
+        "BB84Simulator has run into a problem",
         scala.swing.Dialog.Message.Error
       )
       return
