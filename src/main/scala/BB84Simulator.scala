@@ -20,7 +20,8 @@ object BB84Simulator {
   val servers = new java.util.concurrent.ConcurrentHashMap[Inet4Address, Principal]
 
   // Regex Patterns
-  val IP_REGEX = new Regex("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
+  val IP_REGEX = new Regex("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\" +
+    ".){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
   val NUMERIC_REGEX = new Regex("[^0-9]")
 
   object GUI extends SimpleSwingApplication {
