@@ -32,7 +32,7 @@ object Logger {
 
     val fw = new FileWriter(logFile, true)
     try {
-      fw.write("[" + t + "] [" + c + "] FATAL: " + message + "\n")
+      fw.write("[" + t + "] [" + c + "] ERROR: " + message + "\n")
     }
     finally fw.close()
 
@@ -45,7 +45,7 @@ object Logger {
 
     val fw = new FileWriter(logFile, true)
     try {
-      fw.write("[" + t + "] [" + c + "] FATAL: " + message + "\n")
+      fw.write("[" + t + "] [" + c + "] WARN: " + message + "\n")
     }
     finally fw.close()
 
@@ -58,7 +58,7 @@ object Logger {
 
     val fw = new FileWriter(logFile, true)
     try {
-      fw.write("[" + t + "] [" + c + "] FATAL: " + message + "\n")
+      fw.write("[" + t + "] [" + c + "] INFO: " + message + "\n")
     }
     finally fw.close()
 

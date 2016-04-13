@@ -1,4 +1,4 @@
-import java.io.PrintStream
+import java.io.{File, PrintStream}
 import java.net.{InetAddress, Socket}
 
 import Logging.Logger
@@ -88,10 +88,14 @@ class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, 
 
     Logger.info("All key exchange completed! Ready to send secure messages!", this)
 
-    Utilities.createInfoMessageBox(
-      "Key exchanged successfully!",
-      "Successfully exchanged a key with client " + ip + ":" + port + "\nThe final key is: " + partner.final_key
+    val res = scala.swing.Dialog.showConfirmation(
+      null,
+      "Successfully exchanged a key with client " + ip + ":" + port + "\nThe final key is: " + partner.final_key + "\nWould you like to open the log file of the execution?",
+      optionType = scala.swing.Dialog.Options.YesNo,
+      title = "Key exchanged successfully!"
     )
+    if (res == scala.swing.Dialog.Result.Ok)
+      java.awt.Desktop.getDesktop().edit(new File(Logging.Logger.logFile))
   }
 
   /*
