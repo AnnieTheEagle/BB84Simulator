@@ -1,6 +1,5 @@
 /**
   * Principal.scala
-  *
   * Class to hold all the information on a principal (this can be used by both the server or the client).
   */
 class Principal(connectingTo: String) {

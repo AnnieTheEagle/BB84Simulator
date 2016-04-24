@@ -1,7 +1,8 @@
 package Messages
 
 /**
-  * Created by annie on 21/03/2016.
+  * Basis.scala
+  * This object just defines constant basis bits.
   */
 object Basis {
   val RECTILINEAR = '0'

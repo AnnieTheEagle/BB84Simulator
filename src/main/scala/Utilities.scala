@@ -4,7 +4,8 @@ import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import scalaj.http.Base64
 
 /**
-  * Created by annie on 18/03/2016.
+  * Utilities.scala
+  * This file holds application-wide utilities that may be used in multiple places.
   */
 object Utilities {
   /*

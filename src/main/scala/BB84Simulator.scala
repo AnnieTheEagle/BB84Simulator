@@ -10,7 +10,9 @@ import scala.swing.event.{ButtonClicked, EditDone, WindowClosing}
 import scala.util.matching.Regex
 
 /**
-  * Created by annie on 18/03/2016.
+  * AnnieTheEagle - www.github.com/AnnieTheEagle
+  * BB84Simulator.scala
+  * This file acts as the program's entry point.
   */
 object BB84Simulator {
   val AES_KEYSIZE = 128 // Key Size for AES Encryption

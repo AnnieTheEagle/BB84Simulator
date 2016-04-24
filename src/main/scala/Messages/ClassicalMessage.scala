@@ -1,7 +1,9 @@
 package Messages
 
 /**
-  * Created by annie on 21/03/2016.
+  * ClassicalMessage.scala
+  * This file defines classical message codes as well as the means to serialise them for communication.
+  *
   */
 object ClassicalMessage {
   // Key Exchange

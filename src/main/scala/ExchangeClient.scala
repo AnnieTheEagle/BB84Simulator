@@ -9,7 +9,8 @@ import scala.io.BufferedSource
 import scala.util.control.Breaks._
 
 /**
-  * Created by annie on 18/03/2016.
+  * ExchangeClient.scala
+  * This file describes a single client instance for communicating key exchange to a server.
   */
 class ExchangeClient (ip: String, port: Int, useMK: Boolean, randomMK: Boolean, useRP: Boolean) {
   var enableMorphingKey = useMK     // If we want to use Morphing Encryption Keys (experimental)

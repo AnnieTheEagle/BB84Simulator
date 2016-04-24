@@ -2,14 +2,16 @@ package Messages
 
 import RandomEngine.TrueRandomSource
 
+
+/**
+  * QuantumMessage.scala
+  * This file describes a pseudo-quantum message and how they are serialised for communcation.
+  */
 object QuantumMessage {
   val PSEUDO_FACTOR = 1000000000
   val PSEUDO_RANDOM = new scala.util.Random()
 }
 
-/**
-  * Created by annie on 21/03/2016.
-  */
 class QuantumMessage (bit: Char, basis: Char, polarisation: Int) {
   // MARK: Fields
   private var superposed: Boolean = true
